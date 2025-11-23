@@ -1,0 +1,29 @@
+{
+  "doctype": "DocType",
+  "name": "Contract",
+  "module": "Moto Finance",
+  "is_submittable": 1,
+  "permissions": [
+    {"role": "Admin", "read": 1, "write": 1, "create": 1, "submit": 1},
+    {"role": "Customer", "read": 1}
+  ],
+  "fields": [
+    {"fieldname": "customer", "label": "Customer", "fieldtype": "Link", "options": "Customer Profile", "reqd": 1},
+    {"fieldname": "motorcycle", "label": "Motorcycle", "fieldtype": "Link", "options": "Motorcycle", "reqd": 1},
+    {"fieldname": "total_price", "label": "Total Price", "fieldtype": "Currency", "reqd": 1},
+    {"fieldname": "deposit", "label": "Deposit", "fieldtype": "Currency", "default": 0},
+    {"fieldname": "duration_months", "label": "Duration (Months)", "fieldtype": "Int", "reqd": 1},
+    {"fieldname": "monthly_amount", "label": "Monthly Payment Amount", "fieldtype": "Currency", "reqd": 1},
+    {"fieldname": "start_date", "label": "Start Date", "fieldtype": "Date", "reqd": 1},
+    {"fieldname": "end_date", "label": "End Date", "fieldtype": "Date"},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Draft\nActive\nCompleted\nCancelled", "default": "Draft"},
+    {
+      "fieldname": "installments",
+      "label": "Installments",
+      "fieldtype": "Table",
+      "options": "Installment",
+      "reqd": 0
+    },
+    {"fieldname": "remaining_balance", "label": "Remaining Balance", "fieldtype": "Currency", "read_only": 1}
+  ]
+}

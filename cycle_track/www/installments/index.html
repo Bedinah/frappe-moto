@@ -1,0 +1,31 @@
+{% extends "templates/web.html" %}
+{% block title %}Installments{% endblock %}
+{% block page_content %}
+<div class="mf-card">
+  <h2>Upcoming Payments</h2>
+  {% set contract = frappe.form_dict.contract %}
+  {% set doc = frappe.get_doc("Contract", contract) %}
+  <div class="mf-nextdue">
+    {% set next = None %}
+    {% for row in doc.installments %}
+      {% if row.status != "Paid" and (not next) %}
+        {% set next = row %}
+      {% endif %}
+    {% endfor %}
+    {% if next %}
+      <div class="mf-highlight">
+        <strong>Next payment due:</strong> {{ next.due_date }} — {{ next.amount }}
+      </div>
+    {% endif %}
+  </div>
+  <ul class="mf-list">
+    {% for row in doc.installments %}
+      <li class="mf-list-item {{ 'overdue' if row.status=='Overdue' }}">
+        <span>{{ row.due_date }}</span>
+        <span>{{ row.amount }}</span>
+        <span>{{ row.status }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

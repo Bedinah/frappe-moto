@@ -1,0 +1,20 @@
+{% extends "templates/web.html" %}
+{% block title %}Payments{% endblock %}
+{% block page_content %}
+<div class="mf-card">
+  <h2>Payment History</h2>
+  {% set contract = frappe.form_dict.contract %}
+  {% set rows = frappe.get_all("Payment", filters={"contract": contract}, fields=["name","amount","payment_date","mode","reference"], order_by="payment_date desc") %}
+  <ul class="mf-list">
+    {% for p in rows %}
+      <li class="mf-list-item">
+        <span>{{ p.payment_date }}</span>
+        <span>{{ p.amount }}</span>
+        <span>{{ p.mode }}</span>
+        <span>{{ p.reference }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <a class="mf-btn mf-primary" href="/pay?contract={{ contract }}">Pay Installment</a>
+</div>
+{% endblock %}

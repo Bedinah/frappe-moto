@@ -1,9 +1,40 @@
 app_name = "cycle_track"
 app_title = "CycleTrack"
 app_publisher = "techberna"
+app_version = "0.0.1"
+app_icon = "octicon octicon-rocket"
+app_color = "#5C6BC0"
 app_description = "web app that handles cycle managment"
 app_email = "bernabazubagira@gmail.com"
 app_license = "mit"
+fixtures = ["Role"]
+scheduler_events = {
+    "daily": [
+        "cycle_track.events.send_monthly_reminders",
+        "cycle_track.events.send_overdue_notices"
+    ]
+}
+# Desk Page
+override_whitelisted_methods = {
+    "cycle_track.api.get_admin_kpis": "cycle_track.page.admin_dashboard.dashboard.get_admin_kpis"
+}
+app_include_css = ["cycle_track/public/css/mf_theme.css"]
+website_route_rules = [
+    {"from_route": "/contract", "to_route": "contract/index"},
+    {"from_route": "/installments", "to_route": "installments/index"},
+    {"from_route": "/payments", "to_route": "payments/index"},
+    {"from_route": "/pay", "to_route": "pay/index"}
+]
+patches = ["cycle_track.patches.seed_demo.execute"]
+
+
+
+
+
+
+
+
+
 
 # Apps
 # ------------------

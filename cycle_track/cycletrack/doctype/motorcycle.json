@@ -1,0 +1,26 @@
+{
+  "doctype": "DocType",
+  "name": "Motorcycle",
+  "module": "Moto Finance",
+  "custom": 0,
+  "is_tree": 0,
+  "editable_grid": 1,
+  "permissions": [
+    {"role": "Admin", "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1}
+  ],
+  "fields": [
+    {"fieldname": "brand", "label": "Brand", "fieldtype": "Data", "reqd": 1},
+    {"fieldname": "model", "label": "Model", "fieldtype": "Data", "reqd": 1},
+    {"fieldname": "year", "label": "Year", "fieldtype": "Int"},
+    {"fieldname": "plate_number", "label": "Plate Number", "fieldtype": "Data", "unique": 1},
+    {"fieldname": "price", "label": "Price", "fieldtype": "Currency", "reqd": 1},
+    {
+      "fieldname": "status",
+      "label": "Status",
+      "fieldtype": "Select",
+      "options": "Available\nActive Contract\nCompleted\nSold",
+      "default": "Available",
+      "reqd": 1
+    }
+  ]
+}

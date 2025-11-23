@@ -1,0 +1,40 @@
+<!-- {% extends "templates/web.html" %}
+{% block title %}My Contract{% endblock %}
+{% block page_content %}
+<div class="mf-card">
+  <h2>My Contract</h2>
+  {% set contracts = frappe.call('cycle_track.www.portal._get_customer_contracts', {user: frappe.session.user}).message %}
+  {% if contracts and contracts|length > 0 %}
+    {% set c = contracts[0] %}
+    <div class="mf-row">
+      <div><strong>Status:</strong> {{ c.status }}</div>
+      <div><strong>Remaining Balance:</strong> {{ c.remaining_balance }}</div>
+      <div><strong>Start:</strong> {{ c.start_date }} | <strong>End:</strong> {{ c.end_date }}</div>
+    </div>
+    <a class="mf-btn" href="/installments?contract={{ c.name }}">View Payment Schedule</a>
+    <a class="mf-btn mf-primary" href="/payments?contract={{ c.name }}">Payment History</a>
+  {% else %}
+    <p>No contracts found.</p>
+  {% endif %}
+</div>
+{% endblock %} -->
+
+{% extends "templates/web.html" %}
+{% block title %}My Contract{% endblock %}
+{% block page_content %}
+<div class="mf-card">
+  <h2>My Contract</h2>
+  {% if contracts and contracts|length > 0 %}
+    {% set c = contracts[0] %}
+    <div class="mf-row">
+      <div><strong>Status:</strong> {{ c.status }}</div>
+      <div><strong>Remaining Balance:</strong> {{ c.remaining_balance }}</div>
+      <div><strong>Start:</strong> {{ c.start_date }} | <strong>End:</strong> {{ c.end_date }}</div>
+    </div>
+    <a class="mf-btn" href="/installments?contract={{ c.name }}">View Payment Schedule</a>
+    <a class="mf-btn mf-primary" href="/payments?contract={{ c.name }}">Payment History</a>
+  {% else %}
+    <p>No contracts found.</p>
+  {% endif %}
+</div>
+{% endblock %}

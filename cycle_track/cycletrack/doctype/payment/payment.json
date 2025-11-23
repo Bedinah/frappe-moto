@@ -1,0 +1,18 @@
+{
+  "doctype": "DocType",
+  "name": "Payment",
+  "module": "Moto Finance",
+  "is_submittable": 1,
+  "permissions": [
+    {"role": "Admin", "read": 1, "write": 1, "create": 1, "submit": 1},
+    {"role": "Customer", "read": 1, "create": 1}
+  ],
+  "fields": [
+    {"fieldname": "contract", "label": "Contract", "fieldtype": "Link", "options": "Contract", "reqd": 1},
+    {"fieldname": "installment_no", "label": "Installment Row #", "fieldtype": "Int"},
+    {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "reqd": 1},
+    {"fieldname": "payment_date", "label": "Payment Date", "fieldtype": "Date", "reqd": 1},
+    {"fieldname": "mode", "label": "Mode", "fieldtype": "Select", "options": "Cash\nMobile Money\nBank Transfer"},
+    {"fieldname": "reference", "label": "Reference", "fieldtype": "Data"}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "doctype": "DocType",
+  "name": "Installment",
+  "istable": 1,
+  "module": "Moto Finance",
+  "fields": [
+    {"fieldname": "due_date", "label": "Due Date", "fieldtype": "Date", "reqd": 1},
+    {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "reqd": 1},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Pending\nPaid\nOverdue", "default": "Pending"},
+    {"fieldname": "payment", "label": "Payment", "fieldtype": "Link", "options": "Payment"}
+  ]
+}

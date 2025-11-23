@@ -1,0 +1,11 @@
+[
+  {
+    "doctype": "Role",
+    "role_name": "Admin"
+  },
+  {
+    "doctype": "Role",
+    "role_name": "Customer"
+  }
+]
+
