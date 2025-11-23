@@ -7,6 +7,7 @@ app_color = "#5C6BC0"
 app_description = "web app that handles cycle managment"
 app_email = "bernabazubagira@gmail.com"
 app_license = "mit"
+
 scheduler_events = {
     "daily": [
         "cycle_track.events.send_payment_reminders",
@@ -18,12 +19,15 @@ scheduler_events = {
     ]
 }
 
-# Desk Page
-# override_whitelisted_methods = {
+# CSS - Remove leading slash!
+app_include_css = "assets/cycle_track/css/cycle_track.css"
+
+# JS
+app_include_js = "assets/cycle_track/js/cycle_track.js"
+
 override_whitelisted_methods = {
     "cycle_track.api.get_admin_kpis": "cycle_track.page.admin_dashboard.admin_dashboard.get_admin_kpis"
 }
-app_include_css = "/assets/cycle_track/css/cycle_track.css"
 
 website_route_rules = [
     {"from_route": "/contract", "to_route": "contract/index"},
@@ -34,7 +38,7 @@ website_route_rules = [
         "from_route": "/admin_dashboard",
         "to_route": "admin_dashboard"
     },
-     {
+    {
         "from_route": "/customer_profile",
         "to_route": "customer_profile"
     },
@@ -57,7 +61,4 @@ doc_events = {
     }
 }
 
-
 patches = ["cycle_track.patches.seed_demo.execute"]
-
-
