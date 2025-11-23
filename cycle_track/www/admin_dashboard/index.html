@@ -1,0 +1,125 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Admin Dashboard - CycleTrack{% endblock %}
+
+{% block head_include %}
+<link rel="stylesheet" href="/assets/cycle_track/css/cycle_track.css">
+{% endblock %}
+
+{% block page_content %}
+<!-- Header -->
+<div class="ct-header">
+    <div class="ct-header-content">
+        <a href="/" class="ct-logo">
+            🏍️ CycleTrack Admin
+        </a>
+        <nav class="ct-nav">
+            <a href="/app/motorcycle">Motorcycles</a>
+            <a href="/app/customer-profile">Customers</a>
+            <a href="/app/contract">Contracts</a>
+            <a href="/app/payment">Payments</a>
+        </nav>
+    </div>
+</div>
+
+<div class="ct-container">
+    <!-- KPI Cards -->
+    <div class="ct-grid ct-grid-4 ct-fade-in">
+        <div class="ct-kpi">
+            <div class="ct-kpi-value" id="total-motorcycles">0</div>
+            <div class="ct-kpi-label">Total Motorcycles</div>
+        </div>
+        <div class="ct-kpi success">
+            <div class="ct-kpi-value" id="active-contracts">0</div>
+            <div class="ct-kpi-label">Active Contracts</div>
+        </div>
+        <div class="ct-kpi warning">
+            <div class="ct-kpi-value" id="money-month">RWF 0</div>
+            <div class="ct-kpi-label">Revenue This Month</div>
+        </div>
+        <div class="ct-kpi danger">
+            <div class="ct-kpi-value" id="late-customers">0</div>
+            <div class="ct-kpi-label">Late Customers</div>
+        </div>
+    </div>
+
+    <div class="ct-grid ct-grid-2">
+        <!-- Outstanding Balance Card -->
+        <div class="ct-card ct-fade-in">
+            <h2 class="ct-card-title">💰 Financial Overview</h2>
+            <div class="ct-alert ct-alert-info">
+                <strong>Outstanding Balance</strong>
+                <div style="font-size: 28px; font-weight: 700; margin-top: 8px;" id="outstanding">RWF 0</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 13px;">Available Bikes</p>
+                    <p style="font-size: 24px; font-weight: 700;" id="available-bikes">0</p>
+                </div>
+                <div>
+                    <p style="color: var(--text-secondary); font-size: 13px;">Completion Rate</p>
+                    <p style="font-size: 24px; font-weight: 700;" id="completion-rate">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="ct-card ct-fade-in">
+            <h2 class="ct-card-title">⚡ Quick Actions</h2>
+            <div class="ct-btn-group" style="flex-direction: column;">
+                <a href="/app/motorcycle/new" class="ct-btn ct-btn-primary">
+                    ➕ Add New Motorcycle
+                </a>
+                <a href="/app/customer-profile/new" class="ct-btn ct-btn-success">
+                    👤 Register Customer
+                </a>
+                <a href="/app/contract/new" class="ct-btn ct-btn-outline">
+                    📄 Create Contract
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="ct-card ct-fade-in">
+        <h2 class="ct-card-title">💳 Recent Payments</h2>
+        <p class="ct-card-subtitle">Latest payment transactions</p>
+        <div style="overflow-x: auto;">
+            <table class="ct-table" id="payments-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Contract</th>
+                        <th>Amount</th>
+                        <th>Mode</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px;">
+                            <div class="ct-loading" style="border-color: rgba(99, 102, 241, 0.3); border-top-color: #6366f1;"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- <script>
+    // Fetch dashboard data
+    async function loadDashboard() {
+        try {
+            const response = await fetch('/api/method/cycle_track.api.get_admin_dashboard');
+            const data = await response.json();
+            
+            if (data.message) {
+                const stats = data.message;
+                
+                // Update KPIs
+                document.getElementById('total-motorcycles').textContent = stats.total_motorcycles || 0;
+                document.getElementById('active-contracts').textContent = stats.active_contracts || 0;
+                document.getElementById('money-month').textContent = formatCurrency(stats.money_this_month || 0);
+                document.getElementById('late-customers').textContent = stats.late_customers || 0;
+                document.getElementById('outstanding').textContent = formatCurrency(stats.outstanding || 0 -->

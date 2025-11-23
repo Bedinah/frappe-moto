@@ -1,4 +1,6 @@
 {% extends "templates/web.html" %} {% block title %}Payments{% endblock %} {% block page_content %}
+<link rel="stylesheet" href="public/css/cycle_track.css" />
+
 <div class="mf-card">
 	<h2>Payment Historyfdgghjhkk</h2>
 	{% set contract = frappe.form_dict.contract %} {% set rows = frappe.get_all("Payment",

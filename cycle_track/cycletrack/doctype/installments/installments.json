@@ -1,6 +1,6 @@
 {
   "doctype": "DocType",
-  "name": "Installment",
+  "name": "Installments",
   "istable": 1,
   "module": "CycleTrack",
   "fields": [
