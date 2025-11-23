@@ -1,21 +1,25 @@
-{% extends "templates/web.html" %} {% block title %}Payments{% endblock %} {% block page_content %}
-<link rel="stylesheet" href="public/css/cycle_track.css" />
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Payments - CycleTrack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/assets/cycle_track/css/cycle_track.css">
+  <script defer src="/assets/cycle_track/js/cycle_track.js"></script>
+</head>
+<body data_page="payments">
+  <div class="container">
+    <header class="site-header">
+      <div class="brand"><div class="logo">CT</div><div class="app-title">Payments</div></div>
+      <div><a href="/customer_profile" class="btn btn-ghost">Profile</a></div>
+    </header>
 
-<div class="mf-card">
-	<h2>Payment Historyfdgghjhkk</h2>
-	{% set contract = frappe.form_dict.contract %} {% set rows = frappe.get_all("Payment",
-	filters={"contract": contract}, fields=["name","amount","payment_date","mode","reference"],
-	order_by="payment_date desc") %}
-	<ul class="mf-list">
-		{% for p in rows %}
-		<li class="mf-list-item">
-			<span>{{ p.payment_date }}</span>
-			<span>{{ p.amount }}</span>
-			<span>{{ p.mode }}</span>
-			<span>{{ p.reference }}</span>
-		</li>
-		{% endfor %}
-	</ul>
-	<a class="mf-btn mf-primary" href="/pay?contract={{ contract }}">Pay Installment</a>
-</div>
-{% endblock %}
+    <main>
+      <section class="card">
+        <h4 class="small">Payment History</h4>
+        <div id="payments-list" class="list" style="margin-top:12px"></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

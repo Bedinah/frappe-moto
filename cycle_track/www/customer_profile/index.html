@@ -1,285 +1,45 @@
-{% extends "templates/web.html" %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Customer Profile - CycleTrack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/assets/cycle_track/css/cycle_track.css">
+  <script defer src="/assets/cycle_track/js/cycle_track.js"></script>
+</head>
+<body data_page="customer_profile">
+  <div class="container">
+    <header class="site-header">
+      <div class="brand"><div class="logo">CT</div><div class="app-title">CycleTrack</div></div>
+      <div><a href="/payments" class="btn btn-ghost">My Payments</a></div>
+    </header>
 
-{% block title %}My Dashboard - CycleTrack{% endblock %}
-
-{% block head_include %}
-<link rel="stylesheet" href="../../public/css/cycle_track.css">
-{% endblock %}
-
-{% block page_content %}
-<!-- Header -->
-<div class="ct-header">
-    <div class="ct-header-content">
-        <a href="/" class="ct-logo">
-            🏍️ CycleTrack
-        </a>
-        <nav class="ct-nav">
-            <a href="#contract">My Contract</a>
-            <a href="#payments">Payments</a>
-            <a href="/app/user">Account</a>
-        </nav>
-    </div>
-</div>
-
-<div class="ct-container">
-    <!-- Loading State -->
-    <div id="loading" class="ct-card" style="text-align: center; padding: 60px;">
-        <div class="ct-loading" style="width: 40px; height: 40px; margin: 0 auto; border: 4px solid rgba(99, 102, 241, 0.3); border-top-color: #6366f1;"></div>
-        <p style="margin-top: 20px; color: var(--text-secondary);">Loading your dashboard...</p>
-    </div>
-
-    <!-- Main Content (Hidden Initially) -->
-    <div id="main-content" style="display: none;">
-        <!-- Next Payment Alert -->
-        <div id="next-payment-alert"></div>
-
-        <!-- Motorcycle & Contract Info -->
-        <div class="ct-grid ct-grid-2 ct-fade-in">
-            <div class="ct-card">
-                <h2 class="ct-card-title">🏍️ Your Motorcycle</h2>
-                <div id="motorcycle-info">
-                    <div style="background: var(--bg-dark); padding: 20px; border-radius: 12px; margin-top: 12px;">
-                        <h3 id="bike-name" style="font-size: 24px; margin-bottom: 8px;">-</h3>
-                        <p style="color: var(--text-secondary);">
-                            <span id="bike-year">-</span> | Plate: <span id="bike-plate">-</span>
-                        </p>
-                    </div>
-                </div>
+    <main>
+      <section class="card">
+        <h3>Welcome, <span class="small">Customer</span></h3>
+        <div class="grid" style="align-items:center;">
+          <div class="card payment-card">
+            <div class="small">Next payment due</div>
+            <div id="next-due" class="value">—</div>
+            <div class="small">Remaining balance</div>
+            <div id="remaining-balance" class="value mono">—</div>
+            <div class="row">
+              <a href="/pay" class="btn btn-primary">Pay Now</a>
+              <a href="/payments" class="btn btn-ghost">Payment History</a>
             </div>
-
-            <div class="ct-card">
-                <h2 class="ct-card-title">📊 Payment Progress</h2>
-                <div style="margin-top: 12px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                        <span style="color: var(--text-secondary);">Paid</span>
-                        <strong id="progress-text">0%</strong>
-                    </div>
-                    <div class="ct-progress">
-                        <div class="ct-progress-bar" id="progress-bar" style="width: 0%;"></div>
-                    </div>
-                    <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div>
-                            <p style="color: var(--text-secondary); font-size: 13px;">Total Paid</p>
-                            <p id="total-paid" style="font-size: 20px; font-weight: 700; color: var(--secondary);">-</p>
-                        </div>
-                        <div>
-                            <p style="color: var(--text-secondary); font-size: 13px;">Remaining</p>
-                            <p id="remaining-balance" style="font-size: 20px; font-weight: 700; color: var(--warning);">-</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
+          <div class="card">
+            <h4 class="small">Contract</h4>
+            <div class="empty">Contract details will appear here.</div>
+          </div>
         </div>
+      </section>
 
-        <!-- Contract Details -->
-        <div class="ct-card ct-fade-in">
-            <h2 class="ct-card-title">📄 Contract Details</h2>
-            <div class="ct-grid ct-grid-3" style="margin-top: 16px;">
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Total Price</p>
-                    <p id="total-price" style="font-size: 20px; font-weight: 700;">-</p>
-                </div>
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Monthly Payment</p>
-                    <p id="monthly-payment" style="font-size: 20px; font-weight: 700;">-</p>
-                </div>
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Duration</p>
-                    <p id="duration" style="font-size: 20px; font-weight: 700;">-</p>
-                </div>
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Start Date</p>
-                    <p id="start-date" style="font-size: 16px; font-weight: 600;">-</p>
-                </div>
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 13px;">End Date</p>
-                    <p id="end-date" style="font-size: 16px; font-weight: 600;">-</p>
-                </div>
-                <div>
-                    <p style="color: var(--text-secondary); font-size: 13px;">Status</p>
-                    <p id="contract-status" style="font-size: 16px; font-weight: 600;">-</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Payment Schedule -->
-        <div class="ct-card ct-fade-in">
-            <h2 class="ct-card-title">📅 Payment Schedule</h2>
-            <p class="ct-card-subtitle">Your upcoming installments</p>
-            <div style="overflow-x: auto;">
-                <table class="ct-table">
-                    <thead>
-                        <tr>
-                            <th>Due Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="installments-body">
-                        <tr>
-                            <td colspan="3" style="text-align: center; padding: 40px;">
-                                <div class="ct-loading" style="border-color: rgba(99, 102, 241, 0.3); border-top-color: #6366f1;"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Quick Action Button -->
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="#" id="pay-now-btn" class="ct-btn ct-btn-success" style="font-size: 16px; padding: 16px 32px;">
-                💳 Make a Payment
-            </a>
-        </div>
-    </div>
-
-    <!-- No Contract State -->
-    <div id="no-contract" style="display: none;">
-        <div class="ct-card ct-empty">
-            <div class="ct-empty-icon">📭</div>
-            <div class="ct-empty-title">No Active Contract</div>
-            <p style="margin-top: 8px;">You don't have any active contracts yet. Contact admin to get started!</p>
-        </div>
-    </div>
-</div>
-
-<script>
-    let currentContract = null;
-
-    async function loadCustomerDashboard() {
-        try {
-            const response = await fetch('/api/method/cycle_track.api.get_customer_dashboard');
-            const data = await response.json();
-
-            document.getElementById('loading').style.display = 'none';
-
-            if (data.message && data.message.active_contract) {
-                currentContract = data.message.active_contract;
-                displayContract(currentContract);
-                document.getElementById('main-content').style.display = 'block';
-            } else {
-                document.getElementById('no-contract').style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Error loading dashboard:', error);
-            document.getElementById('loading').innerHTML = `
-                <div class="ct-alert ct-alert-danger">
-                    <strong>Error loading dashboard</strong>
-                    <p>Please try refreshing the page.</p>
-                </div>
-            `;
-        }
-    }
-
-    function displayContract(contract) {
-        // Next Payment Alert
-        if (contract.next_due) {
-            const alertClass = contract.next_due.status === 'Overdue' ? 'ct-alert-danger' : 'ct-alert-warning';
-            const alertTitle = contract.next_due.status === 'Overdue' ? '⚠️ Payment Overdue!' : '📌 Next Payment Due';
-            
-            document.getElementById('next-payment-alert').innerHTML = `
-                <div class="ct-alert ${alertClass} ct-fade-in">
-                    <strong>${alertTitle}</strong>
-                    <div style="font-size: 28px; font-weight: 700; margin: 12px 0;">
-                        ${formatCurrency(contract.next_due.amount)}
-                    </div>
-                    <p>Due on <strong>${formatDate(contract.next_due.date)}</strong></p>
-                </div>
-            `;
-        }
-
-        // Motorcycle Info
-        if (contract.motorcycle) {
-            document.getElementById('bike-name').textContent = 
-                `${contract.motorcycle.brand} ${contract.motorcycle.model}`;
-            document.getElementById('bike-year').textContent = contract.motorcycle.year;
-            document.getElementById('bike-plate').textContent = contract.motorcycle.plate_number;
-        }
-
-        // Progress
-        const totalDue = contract.total_price - contract.deposit;
-        const progress = Math.round((contract.total_paid / totalDue) * 100);
-        document.getElementById('progress-bar').style.width = progress + '%';
-        document.getElementById('progress-text').textContent = progress + '%';
-        document.getElementById('total-paid').textContent = formatCurrency(contract.total_paid);
-        document.getElementById('remaining-balance').textContent = formatCurrency(contract.remaining_balance);
-
-        // Contract Details
-        document.getElementById('total-price').textContent = formatCurrency(contract.total_price);
-        document.getElementById('monthly-payment').textContent = formatCurrency(totalDue / (contract.duration_months || 1));
-        document.getElementById('duration').textContent = contract.duration_months + ' months';
-        document.getElementById('start-date').textContent = formatDate(contract.start_date);
-        document.getElementById('end-date').textContent = formatDate(contract.end_date);
-        
-        const statusBadge = contract.status === 'Active' ? 'ct-badge-success' : 'ct-badge-info';
-        document.getElementById('contract-status').innerHTML = 
-            `<span class="ct-badge ${statusBadge}">${contract.status}</span>`;
-
-        // Load installments
-        loadInstallments(contract.name);
-
-        // Setup payment button
-        document.getElementById('pay-now-btn').href = `/pay?contract=${contract.name}`;
-    }
-
-    async function loadInstallments(contractName) {
-        try {
-            const response = await fetch(`/api/method/cycle_track.api.get_contract_details?contract_name=${contractName}`);
-            const data = await response.json();
-
-            if (data.message && data.message.installments) {
-                displayInstallments(data.message.installments);
-            }
-        } catch (error) {
-            console.error('Error loading installments:', error);
-        }
-    }
-
-    function displayInstallments(installments) {
-        const tbody = document.getElementById('installments-body');
-
-        if (installments.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" class="ct-empty">No installments scheduled</td>
-                </tr>
-            `;
-            return;
-        }
-
-        tbody.innerHTML = installments.map(inst => {
-            let badge = 'ct-badge-info';
-            if (inst.status === 'Paid') badge = 'ct-badge-success';
-            if (inst.status === 'Overdue') badge = 'ct-badge-danger';
-            if (inst.status === 'Pending') badge = 'ct-badge-warning';
-
-            return `
-                <tr>
-                    <td><strong>${formatDate(inst.due_date)}</strong></td>
-                    <td><strong style="color: var(--primary);">${formatCurrency(inst.amount)}</strong></td>
-                    <td><span class="ct-badge ${badge}">${inst.status}</span></td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('en-RW', {
-            style: 'currency',
-            currency: 'RWF',
-            minimumFractionDigits: 0
-        }).format(value);
-    }
-
-    function formatDate(date) {
-        return new Date(date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    }
-
-    // Load dashboard
-    loadCustomerDashboard();
-</script>
+      <section class="card" style="margin-top:16px">
+        <h4 class="small">Payment History</h4>
+        <div id="payment-history" class="list"></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

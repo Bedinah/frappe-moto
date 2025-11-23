@@ -1,41 +1,28 @@
-<!-- {% extends "templates/web.html" %}
-{% block title %}My Contract{% endblock %}
-{% block page_content %}
-<div class="mf-card">
-  <h2>My Contract</h2>
-  {% set contracts = frappe.call('cycle_track.www.portal._get_customer_contracts', {user: frappe.session.user}).message %}
-  {% if contracts and contracts|length > 0 %}
-    {% set c = contracts[0] %}
-    <div class="mf-row">
-      <div><strong>Status:</strong> {{ c.status }}</div>
-      <div><strong>Remaining Balance:</strong> {{ c.remaining_balance }}</div>
-      <div><strong>Start:</strong> {{ c.start_date }} | <strong>End:</strong> {{ c.end_date }}</div>
-    </div>
-    <a class="mf-btn" href="/installments?contract={{ c.name }}">View Payment Schedule</a>
-    <a class="mf-btn mf-primary" href="/payments?contract={{ c.name }}">Payment History</a>
-  {% else %}
-    <p>No contracts found.</p>
-  {% endif %}
-</div>
-{% endblock %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Contracts & Inventory - CycleTrack</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/assets/cycle_track/css/cycle_track.css">
+  <script defer src="/assets/cycle_track/js/cycle_track.js"></script>
+</head>
+<body data_page="contract">
+  <div class="container">
+    <header class="site-header">
+      <div class="brand"><div class="logo">CT</div><div class="app-title">Inventory</div></div>
+      <div><a href="/admin_dashboard" class="btn btn-ghost">Dashboard</a></div>
+    </header>
 
- -->
-{% extends "templates/web.html" %} {% block title %}My Contract{% endblock %} {% block page_content
-%}
-<div class="mf-card">
-	<h2>My Contract</h2>
-	{% if contracts and contracts|length > 0 %} {% set c = contracts[0] %}
-	<div class="mf-row">
-		<div><strong>Status:</strong> {{ c.status }}</div>
-		<div><strong>Remaining Balance:</strong> {{ c.remaining_balance }}</div>
-		<div>
-			<strong>Start:</strong> {{ c.start_date }} | <strong>End:</strong> {{ c.end_date }}
-		</div>
-	</div>
-	<a class="mf-btn" href="/installments?contract={{ c.name }}">View Payment Schedule</a>
-	<a class="mf-btn mf-primary" href="/payments?contract={{ c.name }}">Payment History</a>
-	{% else %}
-	<p>No contracts found.</p>
-	{% endif %}
-</div>
-{% endblock %}
+    <main>
+      <section class="card">
+        <div class="row">
+          <h3>Motorcycles</h3>
+          <div><a class="btn btn-primary btn-small">Add Motorcycle</a></div>
+        </div>
+        <div id="contracts-list" class="list" style="margin-top:12px"></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
