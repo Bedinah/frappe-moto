@@ -30,26 +30,24 @@ override_whitelisted_methods = {
 }
 
 website_route_rules = [
+    # Customer routes
     {"from_route": "/contract", "to_route": "contract/index"},
     {"from_route": "/installments", "to_route": "installments/index"},
     {"from_route": "/payments", "to_route": "payments/index"},
     {"from_route": "/pay", "to_route": "pay/index"},
-    {
-        "from_route": "/admin_dashboard",
-        "to_route": "admin_dashboard"
-    },
-    {
-        "from_route": "/customer_profile",
-        "to_route": "customer_profile"
-    },
+    {"from_route": "/customer_profile", "to_route": "customer_profile/index"},
+    
+    # Admin routes
+    {"from_route": "/admin_dashboard", "to_route": "admin_dashboard/index"},
+    {"from_route": "/admin_contracts", "to_route": "admin_contracts/index"},
+    {"from_route": "/admin_customers", "to_route": "admin_customers/index"},
 ]
 
 # Role-based home pages
 role_home_page = {
     "Customer": "/customer_profile",
-    "System Manager": "/admin_profile"
+    "Administrator": "/admin_dashboard"
 }
-
 # Document Events
 doc_events = {
     "Contract": {
