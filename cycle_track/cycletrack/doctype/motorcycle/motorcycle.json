@@ -1,7 +1,7 @@
 {
   "doctype": "DocType",
   "name": "Motorcycle",
-  "module": "Moto Finance",
+  "module": "CycleTrack",
   "custom": 0,
   "is_tree": 0,
   "editable_grid": 1,

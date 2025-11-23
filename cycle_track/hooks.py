@@ -16,7 +16,7 @@ scheduler_events = {
 }
 # Desk Page
 override_whitelisted_methods = {
-    "cycle_track.api.get_admin_kpis": "cycle_track.page.admin_dashboard.dashboard.get_admin_kpis"
+    "CycleTrack.api.get_admin_kpis": "CycleTrack.page.admin_dashboard.admin_dashboard.get_admin_kpis"
 }
 app_include_css = ["cycle_track/public/css/mf_theme.css"]
 website_route_rules = [

@@ -1,7 +1,7 @@
 {
   "doctype": "DocType",
   "name": "Payment",
-  "module": "Moto Finance",
+  "module": "CycleTrack",
   "is_submittable": 1,
   "permissions": [
     {"role": "Admin", "read": 1, "write": 1, "create": 1, "submit": 1},

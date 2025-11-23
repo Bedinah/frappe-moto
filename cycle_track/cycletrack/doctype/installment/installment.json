@@ -2,7 +2,7 @@
   "doctype": "DocType",
   "name": "Installment",
   "istable": 1,
-  "module": "Moto Finance",
+  "module": "CycleTrack",
   "fields": [
     {"fieldname": "due_date", "label": "Due Date", "fieldtype": "Date", "reqd": 1},
     {"fieldname": "amount", "label": "Amount", "fieldtype": "Currency", "reqd": 1},

@@ -1,7 +1,7 @@
 {
   "doctype": "DocType",
   "name": "Customer Profile",
-  "module": "Moto Finance",
+  "module": "CycleTrack",
   "permissions": [
     {"role": "Admin", "read": 1, "write": 1, "create": 1, "delete": 1},
     {"role": "Customer", "read": 1}
