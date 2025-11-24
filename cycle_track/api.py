@@ -1,504 +1,562 @@
+"""
+CycleTrack API v2 - Fixed Whitelisting
+"""
+
 import frappe
 from frappe.utils import getdate, flt, add_days, nowdate
 from frappe import _
+import json
+
 
 # ============================================================================
-# CUSTOMER ENDPOINTS
+# CUSTOMER ROUTES - WHITELISTED
 # ============================================================================
 
-@frappe.whitelist()
-def get_customer_profile():
-    """Get current logged-in customer's profile and active contract"""
-    user = frappe.session.user
-    
-    if user == "Guest":
-        return {"error": "Not authenticated", "data": None}
-    
-    # Find customer profile linked to user
-    profile = frappe.db.get_value("Customer Profile", {"user": user}, "name")
-    if not profile:
-        return {"error": "No customer profile found", "data": None}
-    
-    # Get customer details
-    customer_doc = frappe.get_doc("Customer Profile", profile)
-    
-    # Get all contracts
-    contracts = frappe.get_all("Contract",
-        filters={"customer": profile, "docstatus": 1},
-        fields=["name", "status", "remaining_balance", "total_price", 
-                "deposit", "start_date", "end_date", "motorcycle"])
-    
-    # Get active contract with details
-    active_contract = None
-    for c in contracts:
-        if c.status == "Active":
-            contract_doc = frappe.get_doc("Contract", c.name)
-            next_due = None
-            overdue_count = 0
-            total_paid = 0
-            
-            for inst in contract_doc.installments:
-                if inst.status == "Paid":
-                    total_paid += flt(inst.amount)
-                elif inst.status in ["Pending", "Overdue"]:
-                    if not next_due:
-                        next_due = {
-                            "date": inst.due_date,
-                            "amount": inst.amount,
-                            "status": inst.status
-                        }
-                if inst.status == "Overdue":
-                    overdue_count += 1
-            
-            motorcycle = frappe.get_doc("Motorcycle", c.motorcycle) if c.motorcycle else None
-            
-            active_contract = {
-                "name": c.name,
-                "status": c.status,
-                "remaining_balance": c.remaining_balance,
-                "total_price": c.total_price,
-                "total_paid": total_paid,
-                "deposit": c.deposit,
-                "start_date": c.start_date,
-                "end_date": c.end_date,
-                "next_due": next_due,
-                "overdue_count": overdue_count,
-                "motorcycle": {
-                    "brand": motorcycle.brand,
-                    "model": motorcycle.model,
-                    "year": motorcycle.year,
-                    "plate_number": motorcycle.plate_number
-                } if motorcycle else None
-            }
-            break
-    
-    return {
-        "success": True,
-        "data": {
-            "profile": {
-                "name": customer_doc.name,
-                "full_name": customer_doc.full_name,
-                "phone": customer_doc.phone,
-                "email": customer_doc.email,
-                "status": customer_doc.status
-            },
-            "contracts": contracts,
-            "active_contract": active_contract
-        }
-    }
-
-
-@frappe.whitelist()
-def get_contract_details(contract_name):
-    """Get detailed contract information with installments"""
-    user = frappe.session.user
-    
-    contract = frappe.get_doc("Contract", contract_name)
-    
-    # Check permissions
-    if user != "Administrator":
-        profile = frappe.db.get_value("Customer Profile", {"user": user}, "name")
-        if contract.customer != profile:
-            return {"error": "You don't have permission to view this contract", "data": None}
-    
-    motorcycle = frappe.get_doc("Motorcycle", contract.motorcycle) if contract.motorcycle else None
-    
-    installments = []
-    for inst in contract.installments:
-        installments.append({
-            "due_date": inst.due_date,
-            "amount": inst.amount,
-            "status": inst.status,
-            "payment": inst.payment
-        })
-    
-    return {
-        "success": True,
-        "data": {
-            "contract": {
-                "name": contract.name,
-                "status": contract.status,
-                "total_price": contract.total_price,
-                "deposit": contract.deposit,
-                "remaining_balance": contract.remaining_balance,
-                "duration_months": contract.duration_months,
-                "monthly_amount": contract.monthly_amount,
-                "start_date": contract.start_date,
-                "end_date": contract.end_date
-            },
-            "motorcycle": {
-                "brand": motorcycle.brand,
-                "model": motorcycle.model,
-                "year": motorcycle.year,
-                "plate_number": motorcycle.plate_number,
-                "price": motorcycle.price
-            } if motorcycle else None,
-            "installments": installments
-        }
-    }
-
-
-@frappe.whitelist()
-def list_payments():
-    """Get payment history for current customer"""
-    user = frappe.session.user
-    
-    profile = frappe.db.get_value("Customer Profile", {"user": user}, "name")
-    if not profile:
-        return {"error": "No customer profile found", "data": []}
-    
-    # Get contracts for this customer
-    contracts = frappe.get_all("Contract",
-        filters={"customer": profile},
-        fields=["name"])
-    
-    contract_names = [c.name for c in contracts]
-    
-    if not contract_names:
-        return {"success": True, "data": []}
-    
-    # Get payments
-    payments = frappe.get_all("Payment",
-        filters={"contract": ["in", contract_names], "docstatus": 1},
-        fields=["name", "contract", "amount", "payment_date", "mode", "reference"],
-        order_by="payment_date desc",
-        limit=50)
-    
-    return {"success": True, "data": payments}
-
-
-@frappe.whitelist()
-def list_installments():
-    """Get all installments for customer's contracts"""
-    user = frappe.session.user
-    
-    profile = frappe.db.get_value("Customer Profile", {"user": user}, "name")
-    if not profile:
-        return {"error": "No customer profile found", "data": []}
-    
-    contracts = frappe.get_all("Contract",
-        filters={"customer": profile, "docstatus": 1},
-        fields=["name"])
-    
-    all_installments = []
-    for c in contracts:
-        contract_doc = frappe.get_doc("Contract", c.name)
-        for idx, inst in enumerate(contract_doc.installments):
-            all_installments.append({
-                "contract": c.name,
-                "row": idx + 1,
-                "due_date": inst.due_date,
-                "amount": inst.amount,
-                "status": inst.status,
-                "payment": inst.payment
-            })
-    
-    return {"success": True, "data": all_installments}
-
-
-@frappe.whitelist()
-def pay_installment(contract, amount, payment_date, mode, reference=None):
-    """Record a payment for an installment"""
-    user = frappe.session.user
-    
-    # Verify customer owns this contract
-    profile = frappe.db.get_value("Customer Profile", {"user": user}, "name")
-    contract_doc = frappe.get_doc("Contract", contract)
-    
-    if contract_doc.customer != profile and user != "Administrator":
-        return {"success": False, "error": "You don't have permission to pay this contract"}
-    
+@frappe.whitelist(allow_guest=False)
+def route_create_customer():
+    """Create a new customer"""
     try:
-        payment = frappe.get_doc({
-            "doctype": "Payment",
-            "contract": contract,
-            "amount": flt(amount),
-            "payment_date": payment_date,
-            "mode": mode,
-            "reference": reference
-        })
-        payment.insert()
-        payment.submit()
-        
-        return {
-            "success": True,
-            "message": "Payment recorded successfully",
-            "payment_name": payment.name
-        }
+        data = get_request_data()
+        return CustomerController.create(data)
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Payment Creation Error")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        frappe.log_error(frappe.get_traceback(), 'route_create_customer Error')
+        return error_response(str(e), 500)
 
 
-# ============================================================================
-# ADMIN ENDPOINTS
-# ============================================================================
-
-@frappe.whitelist()
-def get_admin_dashboard():
-    """Get admin dashboard KPIs and overview"""
-    
-    # Total motorcycles
-    total_motorcycles = frappe.db.count("Motorcycle")
-    available_motorcycles = frappe.db.count("Motorcycle", {"status": "Available"})
-    
-    # Active contracts
-    active_contracts = frappe.db.count("Contract", {"status": "Active", "docstatus": 1})
-    completed_contracts = frappe.db.count("Contract", {"status": "Completed", "docstatus": 1})
-    
-    # Money received this month
-    first_day = getdate().replace(day=1)
-    payments = frappe.get_all("Payment",
-        filters={
-            "payment_date": [">=", first_day],
-            "docstatus": 1
-        },
-        fields=["amount"])
-    money_this_month = sum([flt(p.amount) for p in payments])
-    
-    # Outstanding balances
-    contracts = frappe.get_all("Contract", 
-        filters={"status": "Active", "docstatus": 1},
-        fields=["remaining_balance"])
-    outstanding = sum([flt(c.remaining_balance) for c in contracts])
-    
-    # Late customers
-    late_customers = 0
-    active_contracts_list = frappe.get_all("Contract", 
-        filters={"status": "Active", "docstatus": 1}, 
-        fields=["name"])
-    
-    for c in active_contracts_list:
-        doc = frappe.get_doc("Contract", c.name)
-        if any([row.status == "Overdue" for row in doc.installments]):
-            late_customers += 1
-    
-    return {
-        "success": True,
-        "data": {
-            "total_motorcycles": total_motorcycles,
-            "available_motorcycles": available_motorcycles,
-            "active_contracts": active_contracts,
-            "completed_contracts": completed_contracts,
-            "money_this_month": money_this_month,
-            "outstanding": outstanding,
-            "late_customers": late_customers
-        }
-    }
-
-
-@frappe.whitelist()
-def list_contracts(status=None, limit=50):
-    """List all contracts (admin only)"""
-    filters = {"docstatus": 1}
-    if status:
-        filters["status"] = status
-    
-    contracts = frappe.get_all("Contract",
-        filters=filters,
-        fields=["name", "customer", "motorcycle", "status", "total_price", 
-                "remaining_balance", "start_date", "end_date"],
-        order_by="creation desc",
-        limit=limit)
-    
-    # Enrich with customer and motorcycle names
-    enriched = []
-    for c in contracts:
-        customer_doc = frappe.get_doc("Customer Profile", c.customer)
-        motorcycle_doc = frappe.get_doc("Motorcycle", c.motorcycle) if c.motorcycle else None
-        
-        enriched.append({
-            "name": c.name,
-            "customer": c.customer,
-            "customer_name": customer_doc.full_name,
-            "motorcycle": c.motorcycle,
-            "motorcycle_name": f"{motorcycle_doc.brand} {motorcycle_doc.model}" if motorcycle_doc else "N/A",
-            "status": c.status,
-            "total_price": c.total_price,
-            "remaining_balance": c.remaining_balance,
-            "start_date": c.start_date,
-            "end_date": c.end_date
-        })
-    
-    return {"success": True, "data": enriched}
-
-
-@frappe.whitelist()
-def get_admin_payments(limit=20):
-    """Get recent payments for admin dashboard"""
-    payments = frappe.get_all("Payment",
-        filters={"docstatus": 1},
-        fields=["name", "contract", "amount", "payment_date", "mode", "reference"],
-        order_by="payment_date desc",
-        limit=limit)
-    
-    return {"success": True, "data": payments}
-
-
-@frappe.whitelist()
-def get_available_motorcycles():
-    """Get list of available motorcycles for new contracts"""
-    motorcycles = frappe.get_all("Motorcycle",
-        filters={"status": "Available"},
-        fields=["name", "brand", "model", "year", "plate_number", "price"])
-    
-    return {"success": True, "data": motorcycles}
-
-
-@frappe.whitelist()
-def create_contract(customer, motorcycle, total_price, deposit, duration_months, 
-                   monthly_amount, start_date):
-    """Create a new contract (admin only)"""
+@frappe.whitelist(allow_guest=False)
+def route_get_customer_profile():
+    """Get current logged-in customer's profile"""
     try:
-        contract = frappe.get_doc({
-            "doctype": "Contract",
-            "customer": customer,
-            "motorcycle": motorcycle,
-            "total_price": flt(total_price),
-            "deposit": flt(deposit),
-            "duration_months": int(duration_months),
-            "monthly_amount": flt(monthly_amount),
-            "start_date": start_date,
-            "status": "Draft"
-        })
-        contract.insert()
-        contract.submit()
-        
-        return {
-            "success": True,
-            "message": "Contract created and submitted successfully",
-            "contract_name": contract.name
-        }
+        return CustomerController.get_profile()
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Contract Creation Error")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        frappe.log_error(frappe.get_traceback(), 'route_get_customer_profile Error')
+        return error_response(str(e), 500)
 
 
-@frappe.whitelist()
-def list_customers(limit=50):
-    """List all customers"""
-    customers = frappe.get_all("Customer Profile",
-        fields=["name", "full_name", "phone", "email", "status"],
-        order_by="creation desc",
-        limit=limit)
-    
-    # Add contract count
-    enriched = []
-    for c in customers:
-        contract_count = frappe.db.count("Contract", {"customer": c.name})
-        enriched.append({
-            **c,
-            "contract_count": contract_count
-        })
-    
-    return {"success": True, "data": enriched}
-
-
-@frappe.whitelist()
-def create_customer(full_name, phone, email, user=None):
-    """Create a new customer profile"""
+@frappe.whitelist(allow_guest=False)
+def route_list_customers():
+    """Get all customers (admin only)"""
     try:
-        customer = frappe.get_doc({
-            "doctype": "Customer Profile",
-            "full_name": full_name,
-            "phone": phone,
-            "email": email,
-            "user": user,
-            "status": "Active"
-        })
-        customer.insert()
-        
-        return {
-            "success": True,
-            "message": "Customer created successfully",
-            "customer_name": customer.name
-        }
+        limit = frappe.request.args.get('limit', 50)
+        return CustomerController.list_all(int(limit))
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Customer Creation Error")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        frappe.log_error(frappe.get_traceback(), 'route_list_customers Error')
+        return error_response(str(e), 500)
 
 
-@frappe.whitelist()
-def update_customer(customer_name, full_name, phone, email, status):
+@frappe.whitelist(allow_guest=False)
+def route_get_customer():
+    """Get customer by ID"""
+    try:
+        customer_id = frappe.request.args.get('customer_id')
+        if not customer_id:
+            return error_response('customer_id is required', 400)
+        return CustomerController.get_by_id(customer_id)
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), 'route_get_customer Error')
+        return error_response(str(e), 500)
+
+
+@frappe.whitelist(allow_guest=False)
+def route_update_customer():
     """Update customer profile"""
     try:
-        customer = frappe.get_doc("Customer Profile", customer_name)
-        customer.full_name = full_name
-        customer.phone = phone
-        customer.email = email
-        customer.status = status
-        customer.save()
-        
-        return {
-            "success": True,
-            "message": "Customer updated successfully"
-        }
+        data = get_request_data()
+        customer_id = data.get('customer_id')
+        if not customer_id:
+            return error_response('customer_id is required', 400)
+        return CustomerController.update(customer_id, data)
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Customer Update Error")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        frappe.log_error(frappe.get_traceback(), 'route_update_customer Error')
+        return error_response(str(e), 500)
 
 
-@frappe.whitelist()
-def create_motorcycle(brand, model, year, plate_number, price):
+@frappe.whitelist(allow_guest=False)
+def route_delete_customer():
+    """Delete customer (admin only)"""
+    try:
+        data = get_request_data()
+        customer_id = data.get('customer_id')
+        if not customer_id:
+            return error_response('customer_id is required', 400)
+        return CustomerController.delete(customer_id)
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), 'route_delete_customer Error')
+        return error_response(str(e), 500)
+
+
+# ============================================================================
+# MOTORCYCLE ROUTES - WHITELISTED
+# ============================================================================
+
+@frappe.whitelist(allow_guest=False)
+def route_create_motorcycle():
     """Create a new motorcycle"""
     try:
-        motorcycle = frappe.get_doc({
-            "doctype": "Motorcycle",
-            "brand": brand,
-            "model": model,
-            "year": int(year),
-            "plate_number": plate_number,
-            "price": flt(price),
-            "status": "Available"
-        })
-        motorcycle.insert()
-        
-        return {
-            "success": True,
-            "message": "Motorcycle created successfully",
-            "motorcycle_name": motorcycle.name
-        }
+        data = get_request_data()
+        return MotorcycleController.create(data)
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "Motorcycle Creation Error")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        frappe.log_error(frappe.get_traceback(), 'route_create_motorcycle Error')
+        return error_response(str(e), 500)
 
 
-@frappe.whitelist()
-def list_motorcycles(limit=100):
-    """List all motorcycles"""
-    motorcycles = frappe.get_all("Motorcycle",
-        fields=["name", "brand", "model", "year", "plate_number", "price", "status"],
-        order_by="creation desc",
-        limit=limit)
+@frappe.whitelist(allow_guest=False)
+def route_list_motorcycles():
+    """Get all motorcycles"""
+    try:
+        limit = frappe.request.args.get('limit', 100)
+        status = frappe.request.args.get('status', None)
+        return MotorcycleController.list_all(int(limit), status)
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), 'route_list_motorcycles Error')
+        return error_response(str(e), 500)
+
+
+@frappe.whitelist(allow_guest=False)
+def route_get_motorcycle():
+    """Get motorcycle by ID"""
+    try:
+        motorcycle_id = frappe.request.args.get('motorcycle_id')
+        if not motorcycle_id:
+            return error_response('motorcycle_id is required', 400)
+        return MotorcycleController.get_by_id(motorcycle_id)
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), 'route_get_motorcycle Error')
+        return error_response(str(e), 500)
+
+
+@frappe.whitelist(allow_guest=False)
+def route_update_motorcycle():
+    """Update motorcycle"""
+    try:
+        data = get_request_data()
+        motorcycle_id = data.get('motorcycle_id')
+        if not motorcycle_id:
+            return error_response('motorcycle_id is required', 400)
+        return MotorcycleController.update(motorcycle_id, data)
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), 'route_update_motorcycle Error')
+        return error_response(str(e), 500)
+
+
+@frappe.whitelist(allow_guest=False)
+def route_get_available_motorcycles():
+    """Get available motorcycles"""
+    try:
+        return MotorcycleController.get_available()
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), 'route_get_available_motorcycles Error')
+        return error_response(str(e), 500)
+
+
+# ============================================================================
+# CONTROLLER CLASSES
+# ============================================================================
+
+class CustomerController:
+    """Handle all Customer-related operations"""
     
-    return {"success": True, "data": motorcycles}
+    @staticmethod
+    def create(data):
+        """Create a new customer"""
+        try:
+            # Validate required fields
+            if not data.get('full_name'):
+                return error_response('full_name is required', 400)
+            if not data.get('phone'):
+                return error_response('phone is required', 400)
+            
+            # Check if customer already exists with same phone
+            existing = frappe.db.exists('Customer Profile', {'phone': data['phone']})
+            if existing:
+                return error_response('Customer with this phone already exists', 409)
+            
+            # Create customer document
+            customer = frappe.get_doc({
+                'doctype': 'Customer Profile',
+                'full_name': data['full_name'],
+                'phone': data['phone'],
+                'email': data.get('email', ''),
+                'user': data.get('user', None),
+                'status': data.get('status', 'Active')
+            })
+            customer.insert(ignore_permissions=True)
+            frappe.db.commit()
+            
+            return success_response(
+                data=customer_to_dict(customer),
+                message='Customer created successfully',
+                status_code=201
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Customer Creation Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def get_profile():
+        """Get current logged-in customer's profile"""
+        try:
+            user = frappe.session.user
+            if user == 'Guest':
+                return error_response('Not authenticated', 401)
+            
+            # Find customer profile linked to user
+            profile_name = frappe.db.get_value(
+                'Customer Profile',
+                {'user': user},
+                'name'
+            )
+            
+            if not profile_name:
+                return error_response('No customer profile found', 404)
+            
+            customer = frappe.get_doc('Customer Profile', profile_name)
+            
+            return success_response(
+                data=customer_to_dict(customer),
+                message='Profile retrieved successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Get Profile Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def get_by_id(customer_id):
+        """Get customer by ID"""
+        try:
+            if not frappe.db.exists('Customer Profile', customer_id):
+                return error_response('Customer not found', 404)
+            
+            customer = frappe.get_doc('Customer Profile', customer_id)
+            
+            return success_response(
+                data=customer_to_dict(customer),
+                message='Customer retrieved successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Get Customer Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def list_all(limit=50):
+        """Get all customers (admin only)"""
+        try:
+            # Check admin permission
+            if not is_admin():
+                return error_response('Admin access required', 403)
+            
+            customers = frappe.get_all(
+                'Customer Profile',
+                fields=['name', 'full_name', 'phone', 'email', 'status', 'creation'],
+                order_by='creation desc',
+                limit=limit
+            )
+            
+            # Add contract count for each customer
+            for c in customers:
+                c['contract_count'] = frappe.db.count('Contract', {'customer': c['name']})
+            
+            return success_response(
+                data=customers,
+                message='Customers retrieved successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'List Customers Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def update(customer_id, data):
+        """Update customer profile"""
+        try:
+            if not frappe.db.exists('Customer Profile', customer_id):
+                return error_response('Customer not found', 404)
+            
+            customer = frappe.get_doc('Customer Profile', customer_id)
+            
+            # Update fields
+            if data.get('full_name'):
+                customer.full_name = data['full_name']
+            if data.get('phone'):
+                customer.phone = data['phone']
+            if data.get('email'):
+                customer.email = data['email']
+            if data.get('status'):
+                customer.status = data['status']
+            
+            customer.save(ignore_permissions=True)
+            frappe.db.commit()
+            
+            return success_response(
+                data=customer_to_dict(customer),
+                message='Customer updated successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Update Customer Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def delete(customer_id):
+        """Delete customer (admin only)"""
+        try:
+            if not is_admin():
+                return error_response('Admin access required', 403)
+            
+            if not frappe.db.exists('Customer Profile', customer_id):
+                return error_response('Customer not found', 404)
+            
+            # Check if customer has active contracts
+            active_contracts = frappe.db.count(
+                'Contract',
+                {'customer': customer_id, 'status': 'Active'}
+            )
+            
+            if active_contracts > 0:
+                return error_response(
+                    'Cannot delete customer with active contracts',
+                    409
+                )
+            
+            frappe.delete_doc('Customer Profile', customer_id, force=True)
+            frappe.db.commit()
+            
+            return success_response(
+                data={},
+                message='Customer deleted successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Delete Customer Error')
+            return error_response(str(e), 500)
 
 
-@frappe.whitelist()
-def check_overdue_payments():
-    """Check and update overdue installments for all active contracts"""
-    active_contracts = frappe.get_all("Contract", 
-        filters={"status": "Active", "docstatus": 1})
+class MotorcycleController:
+    """Handle all Motorcycle-related operations"""
     
-    updated = 0
-    for c in active_contracts:
-        doc = frappe.get_doc("Contract", c.name)
-        doc.check_overdue_installments()
-        updated += 1
+    @staticmethod
+    def create(data):
+        """Create a new motorcycle"""
+        try:
+            if not is_admin():
+                return error_response('Admin access required', 403)
+            
+            # Validate required fields
+            if not data.get('brand'):
+                return error_response('brand is required', 400)
+            if not data.get('model'):
+                return error_response('model is required', 400)
+            if not data.get('price'):
+                return error_response('price is required', 400)
+            
+            # Check if plate number already exists
+            if data.get('plate_number'):
+                existing = frappe.db.exists(
+                    'Motorcycle',
+                    {'plate_number': data['plate_number']}
+                )
+                if existing:
+                    return error_response('Motorcycle with this plate number already exists', 409)
+            
+            # Create motorcycle document
+            motorcycle = frappe.get_doc({
+                'doctype': 'Motorcycle',
+                'brand': data['brand'],
+                'model': data['model'],
+                'year': int(data.get('year', 2024)),
+                'plate_number': data.get('plate_number', ''),
+                'price': flt(data['price']),
+                'status': 'Available'
+            })
+            motorcycle.insert(ignore_permissions=True)
+            frappe.db.commit()
+            
+            return success_response(
+                data=motorcycle_to_dict(motorcycle),
+                message='Motorcycle created successfully',
+                status_code=201
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Motorcycle Creation Error')
+            return error_response(str(e), 500)
     
-    return {"success": True, "message": f"Checked {updated} contracts for overdue payments"}
+    @staticmethod
+    def get_by_id(motorcycle_id):
+        """Get motorcycle by ID"""
+        try:
+            if not frappe.db.exists('Motorcycle', motorcycle_id):
+                return error_response('Motorcycle not found', 404)
+            
+            motorcycle = frappe.get_doc('Motorcycle', motorcycle_id)
+            
+            return success_response(
+                data=motorcycle_to_dict(motorcycle),
+                message='Motorcycle retrieved successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Get Motorcycle Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def list_all(limit=100, status=None):
+        """Get all motorcycles"""
+        try:
+            filters = {}
+            if status:
+                filters['status'] = status
+            
+            motorcycles = frappe.get_all(
+                'Motorcycle',
+                filters=filters,
+                fields=['name', 'brand', 'model', 'year', 'plate_number', 'price', 'status'],
+                order_by='creation desc',
+                limit=limit
+            )
+            
+            return success_response(
+                data=motorcycles,
+                message='Motorcycles retrieved successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'List Motorcycles Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def get_available():
+        """Get only available motorcycles"""
+        try:
+            motorcycles = frappe.get_all(
+                'Motorcycle',
+                filters={'status': 'Available'},
+                fields=['name', 'brand', 'model', 'year', 'plate_number', 'price']
+            )
+            
+            return success_response(
+                data=motorcycles,
+                message='Available motorcycles retrieved successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Get Available Motorcycles Error')
+            return error_response(str(e), 500)
+    
+    @staticmethod
+    def update(motorcycle_id, data):
+        """Update motorcycle"""
+        try:
+            if not is_admin():
+                return error_response('Admin access required', 403)
+            
+            if not frappe.db.exists('Motorcycle', motorcycle_id):
+                return error_response('Motorcycle not found', 404)
+            
+            motorcycle = frappe.get_doc('Motorcycle', motorcycle_id)
+            
+            # Update fields
+            if data.get('brand'):
+                motorcycle.brand = data['brand']
+            if data.get('model'):
+                motorcycle.model = data['model']
+            if data.get('year'):
+                motorcycle.year = int(data['year'])
+            if data.get('plate_number'):
+                motorcycle.plate_number = data['plate_number']
+            if data.get('price'):
+                motorcycle.price = flt(data['price'])
+            if data.get('status'):
+                motorcycle.status = data['status']
+            
+            motorcycle.save(ignore_permissions=True)
+            frappe.db.commit()
+            
+            return success_response(
+                data=motorcycle_to_dict(motorcycle),
+                message='Motorcycle updated successfully'
+            )
+        
+        except Exception as e:
+            frappe.log_error(frappe.get_traceback(), 'Update Motorcycle Error')
+            return error_response(str(e), 500)
+
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def get_request_data():
+    """Extract JSON data from request body"""
+    try:
+        if frappe.request.method in ['POST', 'PUT']:
+            data = frappe.request.get_json()
+            return data if data else {}
+        return {}
+    except:
+        return {}
+
+
+def is_admin():
+    """Check if current user is admin"""
+    try:
+        user = frappe.session.user
+        if user == 'Administrator':
+            return True
+        
+        user_doc = frappe.get_doc('User', user)
+        return any(role.role in ['Administrator', 'Admin'] for role in user_doc.roles)
+    except:
+        return False
+
+
+def customer_to_dict(customer_doc):
+    """Convert Customer Profile doc to dictionary"""
+    return {
+        'name': customer_doc.name,
+        'full_name': customer_doc.full_name,
+        'phone': customer_doc.phone,
+        'email': customer_doc.email,
+        'status': customer_doc.status,
+        'user': customer_doc.user or None,
+        'creation': str(customer_doc.creation),
+        'modified': str(customer_doc.modified)
+    }
+
+
+def motorcycle_to_dict(motorcycle_doc):
+    """Convert Motorcycle doc to dictionary"""
+    return {
+        'name': motorcycle_doc.name,
+        'brand': motorcycle_doc.brand,
+        'model': motorcycle_doc.model,
+        'year': motorcycle_doc.year,
+        'plate_number': motorcycle_doc.plate_number,
+        'price': motorcycle_doc.price,
+        'status': motorcycle_doc.status,
+        'creation': str(motorcycle_doc.creation),
+        'modified': str(motorcycle_doc.modified)
+    }
+
+
+def success_response(data=None, message='Success', status_code=200):
+    """Return standardized success response"""
+    return {
+        'success': True,
+        'status': status_code,
+        'message': message,
+        'data': data or {}
+    }
+
+
+def error_response(message='Error', status_code=500):
+    """Return standardized error response"""
+    return {
+        'success': False,
+        'status': status_code,
+        'message': message,
+        'data': None
+    }

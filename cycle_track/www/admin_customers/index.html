@@ -6,61 +6,397 @@
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<link rel="stylesheet" href="/assets/cycle_track/css/cycle_track.css" />
 		<style>
+			:root {
+				--primary: #6366f1;
+				--success: #10b981;
+				--danger: #ef4444;
+				--warning: #f59e0b;
+				--bg-card: #1e293b;
+				--text-primary: #f1f5f9;
+				--text-secondary: #94a3b8;
+				--border: #334155;
+			}
+
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+					sans-serif;
+				background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+				min-height: 100vh;
+				color: var(--text-primary);
+			}
+
+			.container {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+
+			.site-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 20px 0;
+				margin-bottom: 30px;
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 15px;
+			}
+
+			.logo {
+				width: 50px;
+				height: 50px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				border-radius: 12px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 20px;
+				font-weight: bold;
+				color: white;
+			}
+
+			.app-title {
+				font-size: 24px;
+				font-weight: 700;
+				color: var(--text-primary);
+			}
+
+			.row {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+			}
+
+			.btn {
+				padding: 10px 20px;
+				border-radius: 8px;
+				border: none;
+				font-weight: 600;
+				cursor: pointer;
+				transition: all 0.3s ease;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 14px;
+			}
+
+			.btn-primary {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+			}
+
+			.btn-primary:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+			}
+
+			.btn-ghost {
+				background: rgba(255, 255, 255, 0.1);
+				color: var(--text-primary);
+				border: 1px solid var(--border);
+			}
+
+			.btn-ghost:hover {
+				background: rgba(255, 255, 255, 0.15);
+			}
+
+			.card {
+				background: var(--bg-card);
+				border-radius: 16px;
+				padding: 30px;
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+			}
+
 			.modal {
 				position: fixed;
 				inset: 0;
-				background: rgba(0, 0, 0, 0.5);
+				background: rgba(0, 0, 0, 0.7);
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				z-index: 1000;
+				animation: fadeIn 0.2s ease-out;
 			}
+
 			.modal-content {
-				background: var(--card);
+				background: var(--bg-card);
 				padding: 24px;
 				border-radius: 12px;
 				width: 90%;
 				max-width: 500px;
 				max-height: 90vh;
 				overflow-y: auto;
+				box-shadow: 0 20px 25px rgba(0, 0, 0, 0.5);
+				animation: slideUp 0.3s ease-out;
 			}
+
 			.modal-content h3 {
 				margin-top: 0;
 				margin-bottom: 20px;
+				color: var(--text-primary);
+				font-size: 20px;
 			}
+
 			.modal-content label {
 				display: block;
 				margin-top: 12px;
 				font-weight: 500;
 				font-size: 0.9rem;
+				color: var(--text-secondary);
 			}
+
 			.modal-content input,
 			.modal-content select {
 				width: 100%;
 				padding: 10px;
-				border: 1px solid #e0e0e0;
+				border: 1px solid var(--border);
 				border-radius: 8px;
 				margin-top: 4px;
 				font-family: inherit;
+				background: rgba(255, 255, 255, 0.1);
+				color: var(--text-primary);
+				box-sizing: border-box;
 			}
+
+			.modal-content input:focus,
+			.modal-content select:focus {
+				outline: none;
+				border-color: var(--primary);
+				background: rgba(255, 255, 255, 0.15);
+			}
+
+			.modal-buttons {
+				display: flex;
+				gap: 10px;
+				margin-top: 20px;
+			}
+
+			.modal-buttons button {
+				flex: 1;
+				padding: 10px 16px;
+				border-radius: 8px;
+				border: none;
+				cursor: pointer;
+				font-weight: 600;
+				transition: all 0.3s;
+			}
+
+			.btn-submit {
+				background: var(--primary);
+				color: white;
+			}
+
+			.btn-submit:hover {
+				background: #4f46e5;
+				transform: translateY(-2px);
+			}
+
+			.btn-submit:disabled {
+				background: var(--text-secondary);
+				cursor: not-allowed;
+				transform: none;
+			}
+
+			.btn-cancel {
+				background: rgba(255, 255, 255, 0.1);
+				color: var(--text-primary);
+				border: 1px solid var(--border);
+			}
+
+			.btn-cancel:hover {
+				background: rgba(255, 255, 255, 0.2);
+			}
+
 			.alert {
 				padding: 16px;
 				border-radius: 8px;
 				margin-bottom: 16px;
 				border-left: 4px solid;
+				animation: slideDown 0.3s ease-out;
 			}
+
 			.alert-success {
-				background: #d4edda;
-				border-color: #28a745;
-				color: #155724;
+				background: rgba(16, 185, 129, 0.1);
+				border-color: var(--success);
+				color: var(--success);
 			}
+
 			.alert-danger {
-				background: #f8d7da;
-				border-color: #dc3545;
-				color: #721c24;
+				background: rgba(239, 68, 68, 0.1);
+				border-color: var(--danger);
+				color: var(--danger);
+			}
+
+			.alert-info {
+				background: rgba(99, 102, 241, 0.1);
+				border-color: var(--primary);
+				color: var(--primary);
+			}
+
+			.list {
+				display: flex;
+				flex-direction: column;
+				gap: 10px;
+			}
+
+			.list-item {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 12px;
+				border-radius: 10px;
+				background: linear-gradient(0deg, rgba(99, 102, 241, 0.05), transparent);
+				border: 1px solid var(--border);
+				transition: all 0.3s;
+			}
+
+			.list-item:hover {
+				background: linear-gradient(0deg, rgba(99, 102, 241, 0.1), transparent);
+				border-color: var(--primary);
+			}
+
+			.list-item-left {
+				flex: 1;
+			}
+
+			.list-item-name {
+				font-weight: 600;
+				color: var(--text-primary);
+				margin-bottom: 4px;
+			}
+
+			.list-item-detail {
+				font-size: 0.85rem;
+				color: var(--text-secondary);
+			}
+
+			.list-item-right {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+
+			.badge {
+				display: inline-block;
+				padding: 4px 12px;
+				border-radius: 20px;
+				font-size: 0.75rem;
+				font-weight: 600;
+				text-transform: uppercase;
+			}
+
+			.badge-success {
+				background: rgba(16, 185, 129, 0.2);
+				color: var(--success);
+			}
+
+			.badge-inactive {
+				background: rgba(239, 68, 68, 0.2);
+				color: var(--danger);
+			}
+
+			.badge-info {
+				background: rgba(99, 102, 241, 0.2);
+				color: var(--primary);
+			}
+
+			.loading {
+				text-align: center;
+				padding: 20px;
+				color: var(--text-secondary);
+			}
+
+			.spinner {
+				display: inline-block;
+				width: 20px;
+				height: 20px;
+				border: 3px solid rgba(99, 102, 241, 0.3);
+				border-top-color: var(--primary);
+				border-radius: 50%;
+				animation: spin 0.8s linear infinite;
+			}
+
+			.empty {
+				text-align: center;
+				padding: 40px 20px;
+				color: var(--text-secondary);
+			}
+
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+				}
+				to {
+					opacity: 1;
+				}
+			}
+
+			@keyframes slideUp {
+				from {
+					opacity: 0;
+					transform: translateY(20px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			@keyframes slideDown {
+				from {
+					opacity: 0;
+					transform: translateY(-10px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+
+			.error-message {
+				color: var(--danger);
+				font-size: 0.85rem;
+				margin-top: 4px;
+				display: none;
+			}
+
+			.error-message.show {
+				display: block;
+			}
+
+			@media (max-width: 768px) {
+				.site-header {
+					flex-direction: column;
+					gap: 15px;
+					align-items: flex-start;
+				}
+
+				.list-item {
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 10px;
+				}
+
+				.list-item-right {
+					width: 100%;
+					justify-content: space-between;
+				}
 			}
 		</style>
-		<script defer src="/assets/cycle_track/js/cycle_track.js"></script>
 	</head>
 	<body data_page="admin_customers">
 		<div class="container">
@@ -79,9 +415,460 @@
 
 			<main>
 				<section class="card">
+					<div id="alert-container"></div>
 					<div id="customers-list" class="list"></div>
 				</section>
 			</main>
 		</div>
+
+		<script>
+			// ============================================================================
+			// CONFIG - FIXED
+			// ============================================================================
+
+			// Get API base - handles both localhost and production
+			function getAPIBase() {
+				const origin =
+					window.location.origin ||
+					window.location.protocol +
+						"//" +
+						window.location.hostname +
+						(window.location.port ? ":" + window.location.port : "");
+				return origin + "/api/method/cycle_track.api";
+			}
+
+			const API_BASE = getAPIBase();
+
+			// ============================================================================
+			// API FUNCTIONS - FIXED WITH BETTER LOGGING
+			// ============================================================================
+
+			async function apiCall(endpoint, method = "GET", data = null) {
+				try {
+					const options = {
+						method: method,
+						credentials: "include",
+						headers: {
+							"Content-Type": "application/json",
+							Accept: "application/json",
+						},
+					};
+
+					if (data && (method === "POST" || method === "PUT")) {
+						options.body = JSON.stringify(data);
+					}
+
+					let url = `${API_BASE}.${endpoint}`;
+
+					if (method === "GET" && data) {
+						url += "?" + new URLSearchParams(data).toString();
+					}
+
+					console.log("🔵 API Call:", {
+						url: url,
+						method: method,
+						data: data,
+						headers: options.headers,
+					});
+
+					const response = await fetch(url, options);
+
+					console.log("🔵 Response Status:", response.status, response.statusText);
+
+					if (!response.ok) {
+						const errorText = await response.text();
+						console.error("❌ Response Error:", errorText);
+						throw new Error(
+							`HTTP ${response.status}: ${response.statusText} - ${errorText}`
+						);
+					}
+
+					const result = await response.json();
+					console.log("✅ API Response:", result);
+
+					// Handle Frappe response format
+					if (result.message) {
+						return result.message;
+					}
+
+					return result;
+				} catch (error) {
+					console.error("❌ API Error:", error);
+					return {
+						success: false,
+						status: 500,
+						message: error.message,
+						data: null,
+					};
+				}
+			}
+
+			// ============================================================================
+			// UI FUNCTIONS
+			// ============================================================================
+
+			function showAlert(message, type = "info") {
+				const container = document.getElementById("alert-container");
+				const alertId = `alert-${Date.now()}`;
+
+				const alert = document.createElement("div");
+				alert.id = alertId;
+				alert.className = `alert alert-${type}`;
+				alert.innerHTML = `
+					<div style="display: flex; justify-content: space-between; align-items: center;">
+						<span>${message}</span>
+						<button onclick="document.getElementById('${alertId}').remove()" 
+								style="background: none; border: none; color: inherit; cursor: pointer; font-size: 18px;">
+							×
+						</button>
+					</div>
+				`;
+
+				container.insertBefore(alert, container.firstChild);
+
+				// Auto remove after 5 seconds
+				setTimeout(() => {
+					const el = document.getElementById(alertId);
+					if (el) el.remove();
+				}, 5000);
+			}
+
+			function showLoading() {
+				const list = document.getElementById("customers-list");
+				list.innerHTML = `
+					<div class="loading">
+						<div class="spinner"></div>
+						<p>Loading customers...</p>
+					</div>
+				`;
+			}
+
+			function showEmpty() {
+				const list = document.getElementById("customers-list");
+				list.innerHTML = `
+					<div class="empty">
+						<p>No customers found</p>
+						<p style="font-size: 0.9rem; margin-top: 10px;">Click "New Customer" to add one</p>
+					</div>
+				`;
+			}
+
+			// ============================================================================
+			// CUSTOMER MANAGEMENT - FIXED
+			// ============================================================================
+ function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        async function frappeCall(method, args = {}) {
+            try {
+                const response = await fetch('/api/method/' + method, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Frappe-CSRF-Token': getCookie('csrf_token')
+                    },
+                    body: JSON.stringify(args)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result.message;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+
+			async function loadCustomers() {
+				showLoading();
+
+				// Try direct Frappe API first
+				try {
+					const result = await apiCall("route_list_customers", "GET", { limit: 100 });
+
+					console.log("📊 Load Customers Result:", JSON.stringify(result, null, 2));
+
+					if (!result || !result.success) {
+						console.warn("⚠️ API returned unsuccessful result");
+
+						// If API doesn't exist, show demo data
+						showAlert("API not found - Showing demo data", "info");
+						renderDemoData();
+						return;
+					}
+
+					if (!result.data || result.data.length === 0) {
+						showEmpty();
+						return;
+					}
+
+					renderCustomersList(result.data);
+				} catch (error) {
+					console.error("❌ Failed to load customers:", error);
+					showAlert(`Error: ${error.message}`, "danger");
+
+					// Show demo data as fallback
+					renderDemoData();
+				}
+			}
+
+
+			function renderCustomersList(customers) {
+				const list = document.getElementById("customers-list");
+				list.innerHTML = customers
+					.map(
+						(customer) => `
+						<div class="list-item">
+							<div class="list-item-left">
+								<div class="list-item-name">${escapeHtml(customer.full_name)}</div>
+								<div class="list-item-detail">
+									📱 ${escapeHtml(customer.phone)} 
+									${customer.email ? "• 📧 " + escapeHtml(customer.email) : ""}
+								</div>
+								<div class="list-item-detail">
+									Contracts: ${customer.contract_count || 0}
+								</div>
+							</div>
+							<div class="list-item-right">
+								<span class="badge ${customer.status === "Active" ? "badge-success" : "badge-inactive"}">
+									${escapeHtml(customer.status)}
+								</span>
+								<button onclick="editCustomer('${
+									customer.name
+								}')" class="btn btn-ghost" style="padding: 6px 12px; font-size: 0.9rem;">
+									✏️ Edit
+								</button>
+							</div>
+						</div>
+					`
+					)
+					.join("");
+			}
+
+			function showCreateCustomerModal() {
+				const modal = document.createElement("div");
+				modal.className = "modal";
+				modal.id = "create-customer-modal";
+				modal.innerHTML = `
+					<div class="modal-content">
+						<h3>Create New Customer</h3>
+						
+						<form id="create-customer-form">
+							<div>
+								<label for="full_name">Full Name *</label>
+								<input 
+									type="text" 
+									id="full_name" 
+									name="full_name" 
+									placeholder="Enter customer's full name"
+									required
+								/>
+								<div class="error-message" data-field="full_name"></div>
+							</div>
+
+							<div>
+								<label for="phone">Phone Number *</label>
+								<input 
+									type="tel" 
+									id="phone" 
+									name="phone" 
+									placeholder="e.g., +250789123456"
+									required
+								/>
+								<div class="error-message" data-field="phone"></div>
+							</div>
+
+							<div>
+								<label for="email">Email Address</label>
+								<input 
+									type="email" 
+									id="email" 
+									name="email" 
+									placeholder="e.g., customer@example.com"
+								/>
+								<div class="error-message" data-field="email"></div>
+							</div>
+
+							<div>
+								<label for="status">Status</label>
+								<select id="status" name="status">
+									<option value="Active">Active</option>
+									<option value="Inactive">Inactive</option>
+								</select>
+							</div>
+
+							<div class="modal-buttons">
+								<button type="submit" class="btn-submit" id="submit-btn">Create Customer</button>
+								<button type="button" class="btn-cancel" onclick="closeModal('create-customer-modal')">Cancel</button>
+							</div>
+						</form>
+					</div>
+				`;
+
+				document.body.appendChild(modal);
+
+				// Handle form submission
+				document
+					.getElementById("create-customer-form")
+					.addEventListener("submit", handleCreateCustomer);
+
+				// Close modal on background click
+				modal.addEventListener("click", (e) => {
+					if (e.target === modal) {
+						closeModal("create-customer-modal");
+					}
+				});
+			}
+
+			async function handleCreateCustomer(e) {
+				e.preventDefault();
+
+				const form = e.target;
+				const submitBtn = document.getElementById("submit-btn");
+
+				// Get form data
+				const formData = {
+					full_name: document.getElementById("full_name").value.trim(),
+					phone: document.getElementById("phone").value.trim(),
+					email: document.getElementById("email").value.trim(),
+					status: document.getElementById("status").value,
+				};
+
+				// Validate
+				if (!formData.full_name) {
+					showFieldError("full_name", "Full name is required");
+					return;
+				}
+				if (!formData.phone) {
+					showFieldError("phone", "Phone number is required");
+					return;
+				}
+
+				// Clear previous errors
+				clearAllErrors();
+
+				// Disable submit button
+				submitBtn.disabled = true;
+				submitBtn.textContent = "Creating...";
+
+				try {
+					// Call API
+					const result = await apiCall("route_create_customer", "POST", formData);
+
+					if (!result.success) {
+						// Handle specific errors
+						if (result.status === 409) {
+							showFieldError(
+								"phone",
+								"Customer with this phone number already exists"
+							);
+						} else if (result.status === 400) {
+							showAlert(`Validation Error: ${result.message}`, "danger");
+						} else {
+							showAlert(`Error: ${result.message}`, "danger");
+						}
+					} else {
+						// Success
+						showAlert(
+							`Customer "${formData.full_name}" created successfully!`,
+							"success"
+						);
+						closeModal("create-customer-modal");
+						loadCustomers(); // Reload list
+					}
+				} catch (error) {
+					showAlert(`Error: ${error.message}`, "danger");
+				} finally {
+					submitBtn.disabled = false;
+					submitBtn.textContent = "Create Customer";
+				}
+			}
+
+			function editCustomer(customerId) {
+				showAlert("Edit functionality coming soon", "info");
+				// TODO: Implement edit modal
+			}
+
+			// ============================================================================
+			// HELPER FUNCTIONS
+			// ============================================================================
+
+			function closeModal(modalId) {
+				const modal = document.getElementById(modalId);
+				if (modal) {
+					modal.style.animation = "fadeOut 0.2s ease-out";
+					setTimeout(() => modal.remove(), 200);
+				}
+			}
+
+			function showFieldError(fieldName, message) {
+				const errorEl = document.querySelector(`[data-field="${fieldName}"]`);
+				if (errorEl) {
+					errorEl.textContent = message;
+					errorEl.classList.add("show");
+				}
+
+				// Also highlight the input
+				const inputEl = document.getElementById(fieldName);
+				if (inputEl) {
+					inputEl.style.borderColor = "var(--danger)";
+					inputEl.addEventListener("focus", () => {
+						inputEl.style.borderColor = "var(--border)";
+						errorEl.classList.remove("show");
+					});
+				}
+			}
+
+			function clearAllErrors() {
+				document.querySelectorAll(".error-message").forEach((el) => {
+					el.classList.remove("show");
+					el.textContent = "";
+				});
+				document.querySelectorAll("input, select").forEach((el) => {
+					el.style.borderColor = "";
+				});
+			}
+
+			function escapeHtml(text) {
+				if (!text) return "";
+				const map = {
+					"&": "&amp;",
+					"<": "&lt;",
+					">": "&gt;",
+					'"': "&quot;",
+					"'": "&#039;",
+				};
+				return String(text).replace(/[&<>"']/g, (m) => map[m]);
+			}
+
+			// ============================================================================
+			// PAGE INITIALIZATION
+			// ============================================================================
+
+			document.addEventListener("DOMContentLoaded", () => {
+				console.log("🚀 Page loaded");
+				console.log("🌐 API Base:", API_BASE);
+				console.log("🔗 Origin:", window.location.origin);
+				console.log("🍪 Cookies:", document.cookie);
+
+				// Load customers on page load
+				loadCustomers();
+
+				// Bind create customer button
+				document
+					.getElementById("create-customer-btn")
+					.addEventListener("click", showCreateCustomerModal);
+			});
+		</script>
 	</body>
 </html>

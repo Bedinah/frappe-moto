@@ -1,31 +1,667 @@
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Make a Payment - CycleTrack</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="assets/cycle_track/css/cycle_track.css">
-  <script defer src="/assets/cycle_track/js/cycle_track.js"></script>
-</head>
-<body data_page="pay">
-  <div class="container">
-    <header class="site-header">
-      <div class="brand"><div class="logo">CT</div><div class="app-title">Pay Installment</div></div>
-      <div><a href="/customer_profile" class="btn btn-ghost">Back</a></div>
-    </header>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Make a Payment - CycleTrack</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
 
-    <main>
-      <section class="card">
-        <form id="pay-form">
-          <div class="small">Amount</div>
-          <input id="pay-amount" class="input" type="number" placeholder="Enter amount" required>
-          <div style="margin-top:12px" class="row">
-            <button class="btn btn-primary" type="submit">Pay</button>
-            <a href="/payments" class="btn btn-ghost">Payment History</a>
-          </div>
-        </form>
-      </section>
-    </main>
-  </div>
-</body>
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+					Cantarell, sans-serif;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				min-height: 100vh;
+				padding: 20px;
+			}
+
+			.container {
+				max-width: 900px;
+				margin: 0 auto;
+			}
+
+			/* Header */
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 40px;
+				background: rgba(255, 255, 255, 0.1);
+				backdrop-filter: blur(10px);
+				padding: 20px 30px;
+				border-radius: 16px;
+				border: 1px solid rgba(255, 255, 255, 0.2);
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				color: white;
+			}
+
+			.logo {
+				width: 48px;
+				height: 48px;
+				background: white;
+				border-radius: 12px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-weight: 800;
+				font-size: 20px;
+				color: #667eea;
+			}
+
+			.app-title {
+				font-size: 24px;
+				font-weight: 700;
+			}
+
+			.back-btn {
+				padding: 12px 24px;
+				background: rgba(255, 255, 255, 0.2);
+				color: white;
+				text-decoration: none;
+				border-radius: 10px;
+				font-weight: 600;
+				transition: all 0.3s ease;
+				border: 1px solid rgba(255, 255, 255, 0.3);
+			}
+
+			.back-btn:hover {
+				background: rgba(255, 255, 255, 0.3);
+				transform: translateX(-5px);
+			}
+
+			/* Main Content */
+			.main-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 24px;
+				margin-bottom: 24px;
+			}
+
+			/* Cards */
+			.card {
+				background: rgba(255, 255, 255, 0.95);
+				backdrop-filter: blur(10px);
+				border-radius: 20px;
+				padding: 36px;
+				box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+				border: 1px solid rgba(255, 255, 255, 0.5);
+				animation: fadeIn 0.6s ease forwards;
+			}
+
+			.card-full {
+				grid-column: 1 / -1;
+			}
+
+			.card-header {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				margin-bottom: 28px;
+				padding-bottom: 20px;
+				border-bottom: 2px solid #f0f0f0;
+			}
+
+			.card-icon {
+				width: 52px;
+				height: 52px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				border-radius: 14px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 26px;
+				color: white;
+			}
+
+			.card-title {
+				font-size: 22px;
+				font-weight: 700;
+				color: #1a202c;
+			}
+
+			/* Payment Summary Box */
+			.summary-box {
+				background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+				border-radius: 16px;
+				padding: 24px;
+				margin-bottom: 28px;
+				border-left: 4px solid #667eea;
+			}
+
+			.summary-row {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 12px 0;
+			}
+
+			.summary-row:not(:last-child) {
+				border-bottom: 1px solid #e2e8f0;
+			}
+
+			.summary-label {
+				font-size: 15px;
+				color: #4a5568;
+				font-weight: 600;
+			}
+
+			.summary-value {
+				font-size: 18px;
+				font-weight: 700;
+				color: #1a202c;
+			}
+
+			.summary-value.highlight {
+				font-size: 28px;
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			/* Form Styles */
+			.form-group {
+				margin-bottom: 24px;
+			}
+
+			.form-label {
+				display: block;
+				font-size: 14px;
+				font-weight: 700;
+				color: #2d3748;
+				margin-bottom: 10px;
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+
+			.input {
+				width: 100%;
+				padding: 18px 20px;
+				font-size: 20px;
+				border: 2px solid #e2e8f0;
+				border-radius: 12px;
+				transition: all 0.3s ease;
+				background: white;
+				font-weight: 600;
+				color: #1a202c;
+			}
+
+			.input:focus {
+				outline: none;
+				border-color: #667eea;
+				box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+				transform: translateY(-2px);
+			}
+
+			.input::placeholder {
+				color: #a0aec0;
+				font-weight: 400;
+			}
+
+			.input-hint {
+				font-size: 13px;
+				color: #718096;
+				margin-top: 8px;
+			}
+
+			/* Quick Amount Buttons */
+			.quick-amounts {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 12px;
+				margin-bottom: 24px;
+			}
+
+			.quick-amount-btn {
+				padding: 16px;
+				background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+				border: 2px solid #e2e8f0;
+				border-radius: 12px;
+				font-weight: 700;
+				font-size: 16px;
+				color: #2d3748;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
+
+			.quick-amount-btn:hover {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				border-color: #667eea;
+				transform: translateY(-3px);
+				box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+			}
+
+			.quick-amount-btn.active {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				border-color: #667eea;
+			}
+
+			/* Payment Method Selection */
+			.payment-methods {
+				display: grid;
+				gap: 12px;
+				margin-bottom: 24px;
+			}
+
+			.payment-method {
+				display: flex;
+				align-items: center;
+				padding: 20px;
+				background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+				border: 2px solid #e2e8f0;
+				border-radius: 12px;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
+
+			.payment-method:hover {
+				border-color: #667eea;
+				transform: translateX(5px);
+				box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1);
+			}
+
+			.payment-method.active {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				border-color: #667eea;
+				color: white;
+			}
+
+			.payment-method input[type="radio"] {
+				margin-right: 16px;
+				width: 20px;
+				height: 20px;
+				cursor: pointer;
+			}
+
+			.payment-method-icon {
+				font-size: 28px;
+				margin-right: 12px;
+			}
+
+			.payment-method-label {
+				font-weight: 600;
+				font-size: 16px;
+			}
+
+			/* Buttons */
+			.btn-group {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				gap: 12px;
+				margin-top: 32px;
+			}
+
+			.btn {
+				padding: 18px 32px;
+				border: none;
+				border-radius: 12px;
+				font-size: 16px;
+				font-weight: 700;
+				cursor: pointer;
+				transition: all 0.3s ease;
+				text-decoration: none;
+				text-align: center;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 8px;
+				text-transform: uppercase;
+				letter-spacing: 0.5px;
+			}
+
+			.btn-primary {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+				color: white;
+				box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+			}
+
+			.btn-primary:hover {
+				transform: translateY(-3px);
+				box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+			}
+
+			.btn-primary:active {
+				transform: translateY(-1px);
+			}
+
+			.btn-secondary {
+				background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+				color: #2d3748;
+				border: 2px solid #e2e8f0;
+			}
+
+			.btn-secondary:hover {
+				background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+				transform: translateY(-2px);
+				box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+			}
+
+			/* Account Info */
+			.account-info {
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+			}
+
+			.info-item {
+				display: flex;
+				justify-content: space-between;
+				padding: 18px;
+				background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+				border-radius: 12px;
+				border: 1px solid #e2e8f0;
+			}
+
+			.info-label {
+				font-weight: 600;
+				color: #4a5568;
+				font-size: 14px;
+			}
+
+			.info-value {
+				font-weight: 700;
+				color: #1a202c;
+				font-size: 15px;
+			}
+
+			/* Security Badge */
+			.security-badge {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 16px;
+				background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+				color: white;
+				border-radius: 12px;
+				margin-top: 24px;
+				font-size: 14px;
+			}
+
+			.security-icon {
+				font-size: 24px;
+			}
+
+			/* Animations */
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+					transform: translateY(20px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			/* Responsive */
+			@media (max-width: 768px) {
+				.main-grid {
+					grid-template-columns: 1fr;
+				}
+
+				.header {
+					flex-direction: column;
+					gap: 16px;
+				}
+
+				.btn-group {
+					grid-template-columns: 1fr;
+				}
+
+				.quick-amounts {
+					grid-template-columns: 1fr;
+				}
+
+				.card {
+					padding: 24px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<!-- Header -->
+			<div class="header">
+				<div class="brand">
+					<div class="logo">CT</div>
+					<div class="app-title">Make a Payment</div>
+				</div>
+				<a
+					href="#"
+					class="back-btn"
+					onclick="alert('Navigate back to profile'); return false;"
+					>← Back</a
+				>
+			</div>
+
+			<!-- Main Grid -->
+			<div class="main-grid">
+				<!-- Payment Form -->
+				<div class="card">
+					<div class="card-header">
+						<div class="card-icon">💳</div>
+						<h2 class="card-title">Payment Details</h2>
+					</div>
+
+					<div class="summary-box">
+						<div class="summary-row">
+							<span class="summary-label">Amount Due</span>
+							<span class="summary-value highlight">$250.00</span>
+						</div>
+						<div class="summary-row">
+							<span class="summary-label">Due Date</span>
+							<span class="summary-value">Dec 1, 2025</span>
+						</div>
+					</div>
+
+					<form id="pay-form" onsubmit="handleSubmit(event)">
+						<div class="form-group">
+							<label class="form-label">Quick Select Amount</label>
+							<div class="quick-amounts">
+								<button
+									type="button"
+									class="quick-amount-btn"
+									onclick="selectAmount(250)"
+								>
+									$250.00
+								</button>
+								<button
+									type="button"
+									class="quick-amount-btn"
+									onclick="selectAmount(500)"
+								>
+									$500.00
+								</button>
+								<button
+									type="button"
+									class="quick-amount-btn"
+									onclick="selectAmount(1250)"
+								>
+									Pay Full
+								</button>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label" for="pay-amount"
+								>Or Enter Custom Amount</label
+							>
+							<input
+								id="pay-amount"
+								class="input"
+								type="number"
+								placeholder="$0.00"
+								step="0.01"
+								min="0"
+								required
+							/>
+							<div class="input-hint">Minimum payment: $50.00</div>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">Payment Method</label>
+							<div class="payment-methods">
+								<label class="payment-method active">
+									<input
+										type="radio"
+										name="payment-method"
+										value="card"
+										checked
+									/>
+									<span class="payment-method-icon">💳</span>
+									<span class="payment-method-label">Credit/Debit Card</span>
+								</label>
+								<label class="payment-method">
+									<input type="radio" name="payment-method" value="bank" />
+									<span class="payment-method-icon">🏦</span>
+									<span class="payment-method-label">Bank Transfer</span>
+								</label>
+								<label class="payment-method">
+									<input type="radio" name="payment-method" value="wallet" />
+									<span class="payment-method-icon">📱</span>
+									<span class="payment-method-label">Digital Wallet</span>
+								</label>
+							</div>
+						</div>
+
+						<div class="btn-group">
+							<button class="btn btn-primary" type="submit">
+								🔒 Process Payment
+							</button>
+							<a
+								href="#"
+								class="btn btn-secondary"
+								onclick="alert('View payment history'); return false;"
+							>
+								History
+							</a>
+						</div>
+
+						<div class="security-badge">
+							<span class="security-icon">🔒</span>
+							<span
+								><strong>Secure Payment:</strong> Your information is encrypted and
+								protected</span
+							>
+						</div>
+					</form>
+				</div>
+
+				<!-- Account Summary -->
+				<div class="card">
+					<div class="card-header">
+						<div class="card-icon">📊</div>
+						<h2 class="card-title">Account Summary</h2>
+					</div>
+
+					<div class="account-info">
+						<div class="info-item">
+							<span class="info-label">Contract ID</span>
+							<span class="info-value">#CT-2024-1847</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Total Balance</span>
+							<span class="info-value">$1,250.00</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Payments Made</span>
+							<span class="info-value">3 of 8</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Next Due Date</span>
+							<span class="info-value">December 1, 2025</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Monthly Payment</span>
+							<span class="info-value">$250.00</span>
+						</div>
+						<div class="info-item">
+							<span class="info-label">Account Status</span>
+							<span class="info-value" style="color: #48bb78">✓ Current</span>
+						</div>
+					</div>
+
+					<div
+						style="
+							margin-top: 24px;
+							padding: 20px;
+							background: linear-gradient(135deg, #fef5e7 0%, #fdebd0 100%);
+							border-radius: 12px;
+							border-left: 4px solid #f39c12;
+						"
+					>
+						<div
+							style="
+								font-weight: 700;
+								color: #d68910;
+								margin-bottom: 8px;
+								display: flex;
+								align-items: center;
+								gap: 8px;
+							"
+						>
+							<span style="font-size: 20px">💡</span> Payment Tip
+						</div>
+						<div style="font-size: 14px; color: #7d6608; line-height: 1.5">
+							Pay more than the minimum to reduce your balance faster and save on
+							future payments.
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			function selectAmount(amount) {
+				document.getElementById("pay-amount").value = amount;
+
+				// Update active state on quick amount buttons
+				document.querySelectorAll(".quick-amount-btn").forEach((btn) => {
+					btn.classList.remove("active");
+				});
+				event.target.classList.add("active");
+			}
+
+			// Update active state for payment methods
+			document.querySelectorAll(".payment-method").forEach((method) => {
+				method.addEventListener("click", function () {
+					document
+						.querySelectorAll(".payment-method")
+						.forEach((m) => m.classList.remove("active"));
+					this.classList.add("active");
+					this.querySelector('input[type="radio"]').checked = true;
+				});
+			});
+
+			function handleSubmit(event) {
+				event.preventDefault();
+				const amount = document.getElementById("pay-amount").value;
+				const method = document.querySelector(
+					'input[name="payment-method"]:checked'
+				).value;
+
+				if (parseFloat(amount) < 50) {
+					alert("Minimum payment amount is $50.00");
+					return;
+				}
+
+				alert(
+					`Processing payment of $${parseFloat(amount).toFixed(
+						2
+					)} via ${method}...\n\nIn production, this would redirect to the payment processor.`
+				);
+			}
+		</script>
+	</body>
 </html>

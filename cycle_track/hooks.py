@@ -1,12 +1,16 @@
 app_name = "cycle_track"
 app_title = "CycleTrack"
 app_publisher = "techberna"
-app_version = "0.0.1"
+app_version = "0.0.2"
 app_icon = "octicon octicon-rocket"
 app_color = "#5C6BC0"
-app_description = "web app that handles cycle managment"
+app_description = "Motorcycle rental and financing management system"
 app_email = "bernabazubagira@gmail.com"
 app_license = "mit"
+
+# ============================================================================
+# SCHEDULER EVENTS
+# ============================================================================
 
 scheduler_events = {
     "daily": [
@@ -19,19 +23,30 @@ scheduler_events = {
     ]
 }
 
-# CSS - Remove leading slash!
+# ============================================================================
+# ASSETS
+# ============================================================================
+
+# CSS - No leading slash!
 app_include_css = "assets/cycle_track/css/cycle_track.css"
 
-# JS
+# JS - No leading slash!
 app_include_js = "assets/cycle_track/js/cycle_track.js"
 
-override_whitelisted_methods = {
-    "cycle_track.api.get_admin_kpis": "cycle_track.page.admin_dashboard.admin_dashboard.get_admin_kpis"
-}
+# ============================================================================
+# API WHITELISTING
+# ============================================================================
+
+# These are automatically whitelisted via @frappe.whitelist() decorator in api.py
+# No need to override here for v2 API
+
+# ============================================================================
+# WEBSITE ROUTES
+# ============================================================================
 
 website_route_rules = [
     # Customer routes
-    {"from_route": "/contract", "to_route": "contract/index"},
+    {"from_route": "/motocycle", "to_route": "motocycle/index"},
     {"from_route": "/installments", "to_route": "installments/index"},
     {"from_route": "/payments", "to_route": "payments/index"},
     {"from_route": "/pay", "to_route": "pay/index"},
@@ -43,12 +58,19 @@ website_route_rules = [
     {"from_route": "/admin_customers", "to_route": "admin_customers/index"},
 ]
 
-# Role-based home pages
+# ============================================================================
+# ROLE-BASED HOME PAGES
+# ============================================================================
+
 role_home_page = {
     "Customer": "/customer_profile",
     "Administrator": "/admin_dashboard"
 }
-# Document Events
+
+# ============================================================================
+# DOCUMENT EVENTS
+# ============================================================================
+
 doc_events = {
     "Contract": {
         "on_submit": "cycle_track.events.on_contract_submit",
@@ -59,4 +81,35 @@ doc_events = {
     }
 }
 
+# ============================================================================
+# DATABASE PATCHES
+# ============================================================================
+
 patches = ["cycle_track.patches.seed_demo.execute"]
+
+# ============================================================================
+# PERMISSIONS (Optional - for web portal access)
+# ============================================================================
+
+# Allow customers to access their own data via web portal
+# web_form_accessible_doctype = [
+#     "Customer Profile",
+#     "Contract",
+#     "Payment",
+# ]
+
+# ============================================================================
+# FIXTURES (Optional - for syncing doctypes and custom fields)
+# ============================================================================
+
+# Sync these doctypes from files
+# fixtures = [
+#     "cycle_track.fixtures.custom_fields",
+# ]
+
+# ============================================================================
+# TESTING (Optional - for automated tests)
+# ============================================================================
+
+# test_runner = "frappe.test_runner.TestRunner"
+# test_suit = "tests"
